@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fake Review Detector</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .container {
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 15px;
+            width: 60%;
+            margin: auto;
+            box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        textarea {
+            width: 80%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid gray;
+            margin-top: 10px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 20px;
+            animation: slideUp 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        @keyframes slideUp {
+            from {transform: translateY(20px); opacity: 0;}
+            to {transform: translateY(0); opacity: 1;}
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🛒 Fake Review Detection System</h1>
+
+    <div class="container">
+        <h2>Check Single Review</h2>
+
+        <form action="/predict" method="post">
+            <textarea name="review" rows="4" placeholder="Enter review..."></textarea><br>
+            <button type="submit">Analyze</button>
+        </form>
+
+        {% if prediction %}
+        <div class="result">
+            <h3>{{ prediction }}</h3>
+            <p>Confidence: {{ confidence }}%</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <br><br>
+
+    <div class="container">
+        <h2>Trust Score Analyzer</h2>
+
+        <form action="/trust" method="post">
+            <textarea name="reviews" rows="6" placeholder="Enter multiple reviews (one per line)..."></textarea><br>
+            <button type="submit">Calculate</button>
+        </form>
+
+        {% if trust %}
+        <div class="result">
+            <h3>Trust Score: {{ trust['Trust Score (%)'] }}%</h3>
+            <p>Fake: {{ trust['Fake Reviews'] }}</p>
+            <p>Genuine: {{ trust['Genuine Reviews'] }}</p>
+            <p>Suspicious: {{ trust['Suspicious Reviews'] }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+
+    {% if trust %}
+<canvas id="chart" width="400" height="200"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const data = {
+        labels: ["Fake", "Genuine", "Suspicious"],
+        datasets: [{
+            label: "Review Analysis",
+            data: [
+                {{ trust['Fake Reviews'] }},
+                {{ trust['Genuine Reviews'] }},
+                {{ trust['Suspicious Reviews'] }}
+            ],
+            backgroundColor: [
+                "red",
+                "green",
+                "orange"
+            ]
+        }]
+    };
+
+    const config = {
+        type: "pie",
+        data: data
+    };
+
+    new Chart(document.getElementById("chart"), config);
+</script>
+{% endif %}
+</body>
+</html>
